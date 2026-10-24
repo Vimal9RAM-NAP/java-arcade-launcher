@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import dev.vimalram.arcade.games.TicTacToeGame;
+import dev.vimalram.arcade.games.RockPaperScissorsGame;
 
 public class LauncherFrame extends JFrame {
 
@@ -198,17 +199,22 @@ public class LauncherFrame extends JFrame {
 
 playButton.addActionListener(event -> {
 
-    if (title.equals("Tic-Tac-Toe")) {
-        new TicTacToeGame().open();
-    } else {
-        JOptionPane.showMessageDialog(
-                this,
-                title + " will be available soon!",
-                title,
-                JOptionPane.INFORMATION_MESSAGE
-        );
-    }
+    switch (title) {
 
+        case "Tic-Tac-Toe" ->
+                new TicTacToeGame().open();
+
+        case "Rock Paper Scissors" ->
+                new RockPaperScissorsGame().open();
+
+        default ->
+                JOptionPane.showMessageDialog(
+                        this,
+                        title + " will be available soon!",
+                        title,
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+    }
 });
 
         card.add(gameTitle);
