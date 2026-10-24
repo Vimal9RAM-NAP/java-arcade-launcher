@@ -5,6 +5,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import dev.vimalram.arcade.games.TicTacToeGame;
 import dev.vimalram.arcade.games.RockPaperScissorsGame;
+import dev.vimalram.arcade.games.NumberGuessingGame;
 
 public class LauncherFrame extends JFrame {
 
@@ -206,6 +207,9 @@ playButton.addActionListener(event -> {
 
         case "Rock Paper Scissors" ->
                 new RockPaperScissorsGame().open();
+
+        case "Number Guessing" ->
+                new NumberGuessingGame().open();
 
         default ->
                 JOptionPane.showMessageDialog(
