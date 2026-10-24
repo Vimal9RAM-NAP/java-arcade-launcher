@@ -3,7 +3,7 @@ package dev.vimalram.arcade;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-public class Main {
+public class Game {
 
     public static void main(String[] args) {
 
