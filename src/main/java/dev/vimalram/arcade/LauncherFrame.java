@@ -3,6 +3,7 @@ package dev.vimalram.arcade;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import dev.vimalram.arcade.games.TicTacToeGame;
 
 public class LauncherFrame extends JFrame {
 
@@ -195,14 +196,20 @@ public class LauncherFrame extends JFrame {
 
         playButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        playButton.addActionListener(event ->
-                JOptionPane.showMessageDialog(
-                        this,
-                        title + " will be available soon!",
-                        title,
-                        JOptionPane.INFORMATION_MESSAGE
-                )
+playButton.addActionListener(event -> {
+
+    if (title.equals("Tic-Tac-Toe")) {
+        new TicTacToeGame().open();
+    } else {
+        JOptionPane.showMessageDialog(
+                this,
+                title + " will be available soon!",
+                title,
+                JOptionPane.INFORMATION_MESSAGE
         );
+    }
+
+});
 
         card.add(gameTitle);
         card.add(Box.createVerticalStrut(12));
