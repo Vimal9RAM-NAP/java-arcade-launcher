@@ -16,6 +16,19 @@ public class BreakoutGame {
     private static final Color MUTED = new Color(143, 155, 180);
     private static final Color BALL_COLOR = new Color(255, 83, 112);
 
+    private static final int ROWS = 5;
+    private static final int COLS = 10;
+    private static final int BRICK_WIDTH = 68;
+    private static final int BRICK_HEIGHT = 20;
+    private static final int BRICK_GAP = 6;
+    private static final int BRICK_START_Y = 90;
+    private static final int BRICK_START_X =
+            (WIDTH - (COLS * BRICK_WIDTH + (COLS - 1) * BRICK_GAP)) / 2;
+
+    private static final int POINTS_PER_BRICK = 10;
+
+    private final boolean[][] bricks = new boolean[ROWS][COLS];
+
     private JFrame frame;
     private GamePanel gamePanel;
     private Timer timer;
@@ -40,6 +53,8 @@ public class BreakoutGame {
     private boolean won;
 
     public void open() {
+        resetBricks();
+
         frame = new JFrame("Java Arcade | Breakout");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setResizable(false);
@@ -65,6 +80,14 @@ public class BreakoutGame {
 
         running = true;
         timer.start();
+    }
+
+    private void resetBricks() {
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+                bricks[row][col] = true;
+            }
+        }
     }
 
     private void installControls() {
@@ -121,6 +144,10 @@ public class BreakoutGame {
             ballSpeedY = Math.abs(ballSpeedY);
         }
 
+        Rectangle ball = new Rectangle(
+                ballX, ballY, ballSize, ballSize
+        );
+
         if (ballY + ballSize >= paddleY
                 && ballY + ballSize <= paddleY + paddleHeight + 8
                 && ballX + ballSize >= paddleX
@@ -141,6 +168,8 @@ public class BreakoutGame {
             }
         }
 
+        checkBrickCollisions(ball);
+
         if (ballY > HEIGHT) {
             lives--;
 
@@ -152,6 +181,54 @@ public class BreakoutGame {
                 resetBall();
             }
         }
+    }
+
+    private void checkBrickCollisions(Rectangle ball) {
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+
+                if (!bricks[row][col]) {
+                    continue;
+                }
+
+                int brickX = BRICK_START_X
+                        + col * (BRICK_WIDTH + BRICK_GAP);
+
+                int brickY = BRICK_START_Y
+                        + row * (BRICK_HEIGHT + BRICK_GAP);
+
+                Rectangle brick = new Rectangle(
+                        brickX, brickY, BRICK_WIDTH, BRICK_HEIGHT
+                );
+
+                if (ball.intersects(brick)) {
+                    bricks[row][col] = false;
+                    score += POINTS_PER_BRICK;
+
+                    ballSpeedY = -ballSpeedY;
+
+                    if (allBricksDestroyed()) {
+                        won = true;
+                        running = false;
+                        timer.stop();
+                    }
+
+                    return;
+                }
+            }
+        }
+    }
+
+    private boolean allBricksDestroyed() {
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+                if (bricks[row][col]) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     private void resetBall() {
@@ -169,7 +246,9 @@ public class BreakoutGame {
         won = false;
         running = true;
 
+        resetBricks();
         resetBall();
+
         timer.start();
         gamePanel.repaint();
     }
@@ -196,6 +275,7 @@ public class BreakoutGame {
             g.fillRect(0, 0, getWidth(), getHeight());
 
             drawHeader(g);
+            drawBricks(g);
             drawPaddle(g);
             drawBall(g);
 
@@ -220,6 +300,41 @@ public class BreakoutGame {
             g.setFont(new Font("Monospaced", Font.BOLD, 15));
             g.drawString("SCORE: " + score, 500, 35);
             g.drawString("LIVES: " + lives, 660, 35);
+        }
+
+        private void drawBricks(Graphics2D g) {
+            Color[] brickColors = {
+                    new Color(255, 83, 112),
+                    new Color(255, 155, 80),
+                    new Color(255, 220, 100),
+                    new Color(91, 255, 155),
+                    new Color(91, 180, 255)
+            };
+
+            for (int row = 0; row < ROWS; row++) {
+                for (int col = 0; col < COLS; col++) {
+
+                    if (!bricks[row][col]) {
+                        continue;
+                    }
+
+                    int brickX = BRICK_START_X
+                            + col * (BRICK_WIDTH + BRICK_GAP);
+
+                    int brickY = BRICK_START_Y
+                            + row * (BRICK_HEIGHT + BRICK_GAP);
+
+                    g.setColor(brickColors[row]);
+                    g.fillRoundRect(
+                            brickX,
+                            brickY,
+                            BRICK_WIDTH,
+                            BRICK_HEIGHT,
+                            8,
+                            8
+                    );
+                }
+            }
         }
 
         private void drawPaddle(Graphics2D g) {
