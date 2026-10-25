@@ -179,7 +179,7 @@ public class BreakoutGame {
         }
 
         private void drawHeader(Graphics2D g) {
-            g.setColor(new Color(18, 23, 34));
+            g.setColor(new Color(12, 27, 58));
             g.fillRect(0, 0, WIDTH, 60);
 
             g.setColor(neon);
