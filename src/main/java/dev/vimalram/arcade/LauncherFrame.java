@@ -109,7 +109,29 @@ public class LauncherFrame extends JFrame {
                 "ARCADE"
         ));
 
-        add(library, BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(library);
+
+        scrollPane.setBorder(null);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.getViewport().setBackground(BACKGROUND);
+
+        scrollPane.setVerticalScrollBarPolicy(
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+        );
+
+        scrollPane.setHorizontalScrollBarPolicy(
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
+
+        scrollPane.getVerticalScrollBar().setUnitIncrement(18);
+
+        JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
+        scrollBar.setPreferredSize(new Dimension(10, 0));
+        scrollBar.setBackground(BACKGROUND);
+        scrollBar.setForeground(ACCENT);
+
+        add(scrollPane, BorderLayout.CENTER);
     }
 
     private JPanel createGameCard(
@@ -118,6 +140,7 @@ public class LauncherFrame extends JFrame {
             String category
     ) {
         JPanel card = new JPanel();
+
         card.setBackground(PANEL);
         card.setBorder(new EmptyBorder(20, 22, 20, 22));
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
