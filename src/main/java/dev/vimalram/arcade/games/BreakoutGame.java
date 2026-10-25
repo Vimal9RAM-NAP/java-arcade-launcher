@@ -10,6 +10,12 @@ public class BreakoutGame {
     private static final int WIDTH = 800;
     private static final int HEIGHT = 600;
 
+    private static final Color BACKGROUND = new Color(7, 16, 38);
+    private static final Color HEADER_BACKGROUND = new Color(12, 27, 58);
+    private static final Color NEON = new Color(91, 255, 155);
+    private static final Color MUTED = new Color(143, 155, 180);
+    private static final Color BALL_COLOR = new Color(255, 83, 112);
+
     private JFrame frame;
     private GamePanel gamePanel;
     private Timer timer;
@@ -37,6 +43,7 @@ public class BreakoutGame {
         frame = new JFrame("Java Arcade | Breakout");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setResizable(false);
+        frame.getContentPane().setBackground(BACKGROUND);
 
         gamePanel = new GamePanel();
         gamePanel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -51,7 +58,7 @@ public class BreakoutGame {
             gamePanel.repaint();
         });
 
-        frame.add(gamePanel);
+        frame.setContentPane(gamePanel);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -86,6 +93,10 @@ public class BreakoutGame {
         gamePanel.getActionMap().put(name, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent event) {
+                if (!running || gameOver || won) {
+                    return;
+                }
+
                 paddleX += direction * 25;
                 paddleX = Math.max(0, Math.min(WIDTH - paddleWidth, paddleX));
                 gamePanel.repaint();
@@ -97,12 +108,17 @@ public class BreakoutGame {
         ballX += ballSpeedX;
         ballY += ballSpeedY;
 
-        if (ballX <= 0 || ballX + ballSize >= WIDTH) {
-            ballSpeedX = -ballSpeedX;
+        if (ballX <= 0) {
+            ballX = 0;
+            ballSpeedX = Math.abs(ballSpeedX);
+        } else if (ballX + ballSize >= WIDTH) {
+            ballX = WIDTH - ballSize;
+            ballSpeedX = -Math.abs(ballSpeedX);
         }
 
-        if (ballY <= 70) {
-            ballSpeedY = -ballSpeedY;
+        if (ballY <= 60) {
+            ballY = 60;
+            ballSpeedY = Math.abs(ballSpeedY);
         }
 
         if (ballY + ballSize >= paddleY
@@ -110,7 +126,19 @@ public class BreakoutGame {
                 && ballX + ballSize >= paddleX
                 && ballX <= paddleX + paddleWidth
                 && ballSpeedY > 0) {
+
+            ballY = paddleY - ballSize;
             ballSpeedY = -Math.abs(ballSpeedY);
+
+            double hitPosition =
+                    (ballX + ballSize / 2.0 - (paddleX + paddleWidth / 2.0))
+                            / (paddleWidth / 2.0);
+
+            ballSpeedX = (int) Math.round(hitPosition * 5);
+
+            if (ballSpeedX == 0) {
+                ballSpeedX = 1;
+            }
         }
 
         if (ballY > HEIGHT) {
@@ -119,6 +147,7 @@ public class BreakoutGame {
             if (lives <= 0) {
                 gameOver = true;
                 running = false;
+                timer.stop();
             } else {
                 resetBall();
             }
@@ -147,9 +176,10 @@ public class BreakoutGame {
 
     private class GamePanel extends JPanel {
 
-        private final Color background = new Color(7, 16, 38);
-        private final Color neon = new Color(91, 255, 155);
-        private final Color muted = new Color(143, 155, 180);
+        GamePanel() {
+            setBackground(BACKGROUND);
+            setOpaque(true);
+        }
 
         @Override
         protected void paintComponent(Graphics graphics) {
@@ -162,8 +192,8 @@ public class BreakoutGame {
                     RenderingHints.VALUE_ANTIALIAS_ON
             );
 
-            g.setColor(background);
-            g.fillRect(0, 0, WIDTH, HEIGHT);
+            g.setColor(BACKGROUND);
+            g.fillRect(0, 0, getWidth(), getHeight());
 
             drawHeader(g);
             drawPaddle(g);
@@ -179,10 +209,10 @@ public class BreakoutGame {
         }
 
         private void drawHeader(Graphics2D g) {
-            g.setColor(new Color(12, 27, 58));
-            g.fillRect(0, 0, WIDTH, 60);
+            g.setColor(HEADER_BACKGROUND);
+            g.fillRect(0, 0, getWidth(), 60);
 
-            g.setColor(neon);
+            g.setColor(NEON);
             g.setFont(new Font("SansSerif", Font.BOLD, 22));
             g.drawString("BREAKOUT", 24, 37);
 
@@ -193,20 +223,27 @@ public class BreakoutGame {
         }
 
         private void drawPaddle(Graphics2D g) {
-            g.setColor(neon);
+            g.setColor(NEON);
             g.fillRoundRect(
-                    paddleX, paddleY,
-                    paddleWidth, paddleHeight,
-                    12, 12
+                    paddleX,
+                    paddleY,
+                    paddleWidth,
+                    paddleHeight,
+                    12,
+                    12
             );
         }
 
         private void drawBall(Graphics2D g) {
             g.setColor(new Color(255, 83, 112, 65));
-            g.fillOval(ballX - 5, ballY - 5,
-                    ballSize + 10, ballSize + 10);
+            g.fillOval(
+                    ballX - 5,
+                    ballY - 5,
+                    ballSize + 10,
+                    ballSize + 10
+            );
 
-            g.setColor(new Color(255, 83, 112));
+            g.setColor(BALL_COLOR);
             g.fillOval(ballX, ballY, ballSize, ballSize);
         }
 
@@ -215,26 +252,26 @@ public class BreakoutGame {
                 String title,
                 String message
         ) {
-            g.setColor(new Color(5, 8, 14, 210));
-            g.fillRect(0, 60, WIDTH, HEIGHT - 60);
+            g.setColor(new Color(5, 8, 20, 220));
+            g.fillRect(0, 60, getWidth(), getHeight() - 60);
 
-            g.setColor(neon);
+            g.setColor(NEON);
             g.setFont(new Font("SansSerif", Font.BOLD, 36));
 
             FontMetrics titleMetrics = g.getFontMetrics();
             int titleX =
-                    (WIDTH - titleMetrics.stringWidth(title)) / 2;
+                    (getWidth() - titleMetrics.stringWidth(title)) / 2;
 
-            g.drawString(title, titleX, HEIGHT / 2);
+            g.drawString(title, titleX, getHeight() / 2);
 
-            g.setColor(muted);
+            g.setColor(MUTED);
             g.setFont(new Font("SansSerif", Font.PLAIN, 16));
 
             FontMetrics messageMetrics = g.getFontMetrics();
             int messageX =
-                    (WIDTH - messageMetrics.stringWidth(message)) / 2;
+                    (getWidth() - messageMetrics.stringWidth(message)) / 2;
 
-            g.drawString(message, messageX, HEIGHT / 2 + 35);
+            g.drawString(message, messageX, getHeight() / 2 + 35);
         }
     }
 }
