@@ -7,6 +7,7 @@ import dev.vimalram.arcade.games.TicTacToeGame;
 import dev.vimalram.arcade.games.RockPaperScissorsGame;
 import dev.vimalram.arcade.games.NumberGuessingGame;
 import dev.vimalram.arcade.games.SnakeGame;
+import dev.vimalram.arcade.games.BreakoutGame;
 
 public class LauncherFrame extends JFrame {
 
@@ -214,6 +215,9 @@ playButton.addActionListener(event -> {
 
         case "Snake" ->
                 new SnakeGame().open();
+
+        case "Breakout" ->
+                new BreakoutGame().open();
 
         default ->
                 JOptionPane.showMessageDialog(
