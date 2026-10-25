@@ -147,7 +147,7 @@ public class BreakoutGame {
 
     private class GamePanel extends JPanel {
 
-        private final Color background = new Color(12, 15, 23);
+        private final Color background = new Color(7, 16, 38);
         private final Color neon = new Color(91, 255, 155);
         private final Color muted = new Color(143, 155, 180);
 
