@@ -135,6 +135,13 @@ public class LauncherFrame extends JFrame {
                         "PUZZLE"
                 )
         );
+        library.add(
+                createGameCard(
+                     "Breakout",
+                     "Smash bricks, control the paddle, and beat the high score.",
+                     "ARCADE"
+                )
+        );
 
         add(library, BorderLayout.CENTER);
     }
