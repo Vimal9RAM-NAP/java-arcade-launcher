@@ -1,5 +1,7 @@
 package dev.vimalram.arcade.games;
 
+import dev.vimalram.arcade.HighScoreManager;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -46,6 +48,7 @@ public class BreakoutGame {
     private int ballSpeedY = -4;
 
     private int score;
+    private int highScore;
     private int lives = 3;
 
     private boolean running;
@@ -54,6 +57,10 @@ public class BreakoutGame {
 
     public void open() {
         resetBricks();
+
+        score = 0;
+        lives = 3;
+        highScore = HighScoreManager.getHighScore("Breakout");
 
         frame = new JFrame("Java Arcade | Breakout");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -122,6 +129,7 @@ public class BreakoutGame {
 
                 paddleX += direction * 25;
                 paddleX = Math.max(0, Math.min(WIDTH - paddleWidth, paddleX));
+
                 gamePanel.repaint();
             }
         });
@@ -204,6 +212,11 @@ public class BreakoutGame {
                 if (ball.intersects(brick)) {
                     bricks[row][col] = false;
                     score += POINTS_PER_BRICK;
+
+                    if (score > highScore) {
+                        highScore = score;
+                        HighScoreManager.saveScore("Breakout", highScore);
+                    }
 
                     ballSpeedY = -ballSpeedY;
 
@@ -298,8 +311,10 @@ public class BreakoutGame {
 
             g.setColor(Color.WHITE);
             g.setFont(new Font("Monospaced", Font.BOLD, 15));
-            g.drawString("SCORE: " + score, 500, 35);
-            g.drawString("LIVES: " + lives, 660, 35);
+
+            g.drawString("SCORE: " + score, 350, 35);
+            g.drawString("BEST: " + highScore, 510, 35);
+            g.drawString("LIVES: " + lives, 680, 35);
         }
 
         private void drawBricks(Graphics2D g) {
