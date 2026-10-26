@@ -21,9 +21,7 @@ public final class HighScoreManager {
         Properties scores = loadScores();
 
         try {
-            return Integer.parseInt(
-                    scores.getProperty(gameName, "0")
-            );
+            return Integer.parseInt(scores.getProperty(gameName, "0"));
         } catch (NumberFormatException exception) {
             return 0;
         }
@@ -31,9 +29,17 @@ public final class HighScoreManager {
 
     public static void saveScore(String gameName, int score) {
         Properties scores = loadScores();
-        int currentHighScore = getHighScore(gameName);
+        int currentBest;
 
-        if (score <= currentHighScore) {
+        try {
+            currentBest = Integer.parseInt(
+                    scores.getProperty(gameName, "0")
+            );
+        } catch (NumberFormatException exception) {
+            currentBest = 0;
+        }
+
+        if (score <= currentBest) {
             return;
         }
 
