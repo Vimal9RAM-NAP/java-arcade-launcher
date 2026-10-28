@@ -3,6 +3,8 @@ package dev.vimalram.arcade;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import dev.vimalram.arcade.games.TicTacToeGame;
 import dev.vimalram.arcade.games.RockPaperScissorsGame;
@@ -12,20 +14,19 @@ import dev.vimalram.arcade.games.BreakoutGame;
 
 public class LauncherFrame extends JFrame {
 
-    private static final Color BACKGROUND =
-            new Color(18, 20, 29);
+    private static final Color BACKGROUND = new Color(18, 20, 29);
+    private static final Color PANEL = new Color(29, 33, 46);
+    private static final Color ACCENT = new Color(124, 92, 255);
+    private static final Color TEXT = new Color(239, 242, 255);
+    private static final Color MUTED = new Color(166, 174, 198);
+    private static final Color INPUT_BACKGROUND = new Color(35, 39, 54);
 
-    private static final Color PANEL =
-            new Color(29, 33, 46);
+    private final JPanel library = new JPanel(new GridLayout(0, 2, 18, 18));
+    private final List<GameInfo> games = new ArrayList<>();
 
-    private static final Color ACCENT =
-            new Color(124, 92, 255);
-
-    private static final Color TEXT =
-            new Color(239, 242, 255);
-
-    private static final Color MUTED =
-            new Color(166, 174, 198);
+    private JTextField searchField;
+    private JLabel resultLabel;
+    private JLabel emptyLabel;
 
     public LauncherFrame() {
         setTitle("Java Arcade");
@@ -37,9 +38,42 @@ public class LauncherFrame extends JFrame {
         getContentPane().setBackground(BACKGROUND);
         setLayout(new BorderLayout());
 
+        registerGames();
         createHeader();
         createGameLibrary();
         createFooter();
+    }
+
+    private void registerGames() {
+        games.add(new GameInfo(
+                "Tic-Tac-Toe",
+                "A classic strategy game.",
+                "2 PLAYERS"
+        ));
+
+        games.add(new GameInfo(
+                "Snake",
+                "Eat, grow, and avoid collisions.",
+                "ARCADE"
+        ));
+
+        games.add(new GameInfo(
+                "Rock Paper Scissors",
+                "Challenge the computer.",
+                "QUICK PLAY"
+        ));
+
+        games.add(new GameInfo(
+                "Number Guessing",
+                "Can you find the secret number?",
+                "PUZZLE"
+        ));
+
+        games.add(new GameInfo(
+                "Breakout",
+                "Smash bricks, control the paddle, and beat the high score.",
+                "ARCADE"
+        ));
     }
 
     private void createHeader() {
@@ -62,55 +96,96 @@ public class LauncherFrame extends JFrame {
         subtitle.setFont(new Font("SansSerif", Font.PLAIN, 15));
         subtitle.setForeground(MUTED);
 
+        searchField = new JTextField();
+        searchField.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        searchField.setForeground(TEXT);
+        searchField.setBackground(INPUT_BACKGROUND);
+        searchField.setCaretColor(TEXT);
+        searchField.setBorder(new EmptyBorder(13, 15, 13, 15));
+        searchField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
+        searchField.setToolTipText("Search games by name, description, or category");
+
+        JPanel searchPanel = new JPanel(new BorderLayout(10, 0));
+        searchPanel.setOpaque(false);
+        searchPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
+
+        JLabel searchIcon = new JLabel("⌕");
+        searchIcon.setFont(new Font("SansSerif", Font.BOLD, 25));
+        searchIcon.setForeground(ACCENT);
+        searchIcon.setBorder(new EmptyBorder(0, 12, 0, 0));
+
+        searchPanel.setBackground(INPUT_BACKGROUND);
+        searchPanel.add(searchIcon, BorderLayout.WEST);
+        searchPanel.add(searchField, BorderLayout.CENTER);
+        searchPanel.setBorder(BorderFactory.createLineBorder(
+                new Color(54, 59, 79), 1
+        ));
+
+        resultLabel = new JLabel();
+        resultLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        resultLabel.setForeground(MUTED);
+        resultLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         header.add(brand);
         header.add(Box.createVerticalStrut(10));
         header.add(title);
         header.add(Box.createVerticalStrut(6));
         header.add(subtitle);
+        header.add(Box.createVerticalStrut(22));
+        header.add(searchPanel);
+        header.add(Box.createVerticalStrut(10));
+        header.add(resultLabel);
+
+        searchField.getDocument().addDocumentListener(
+                new javax.swing.event.DocumentListener() {
+                    @Override
+                    public void insertUpdate(
+                            javax.swing.event.DocumentEvent event
+                    ) {
+                        filterGames();
+                    }
+
+                    @Override
+                    public void removeUpdate(
+                            javax.swing.event.DocumentEvent event
+                    ) {
+                        filterGames();
+                    }
+
+                    @Override
+                    public void changedUpdate(
+                            javax.swing.event.DocumentEvent event
+                    ) {
+                        filterGames();
+                    }
+                }
+        );
 
         add(header, BorderLayout.NORTH);
     }
 
     private void createGameLibrary() {
-        JPanel library = new JPanel(
-                new GridLayout(0, 2, 18, 18)
-        );
-
         library.setOpaque(false);
         library.setBorder(new EmptyBorder(12, 35, 20, 35));
 
-        library.add(createGameCard(
-                "Tic-Tac-Toe",
-                "A classic strategy game.",
-                "2 PLAYERS"
-        ));
+        emptyLabel = new JLabel(
+                "<html><div style='text-align:center;'>"
+                        + "<h2>No games found</h2>"
+                        + "Try another search term."
+                        + "</div></html>",
+                SwingConstants.CENTER
+        );
 
-        library.add(createGameCard(
-                "Snake",
-                "Eat, grow, and avoid collisions.",
-                "ARCADE"
-        ));
+        emptyLabel.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        emptyLabel.setForeground(MUTED);
+        emptyLabel.setVisible(false);
 
-        library.add(createGameCard(
-                "Rock Paper Scissors",
-                "Challenge the computer.",
-                "QUICK PLAY"
-        ));
+        JPanel content = new JPanel(new BorderLayout());
+        content.setOpaque(false);
+        content.add(library, BorderLayout.NORTH);
+        content.add(emptyLabel, BorderLayout.CENTER);
 
-        library.add(createGameCard(
-                "Number Guessing",
-                "Can you find the secret number?",
-                "PUZZLE"
-        ));
-
-        library.add(createGameCard(
-                "Breakout",
-                "Smash bricks, control the paddle, and beat the high score.",
-                "ARCADE"
-        ));
-
-        JScrollPane scrollPane = new JScrollPane(library);
-
+        JScrollPane scrollPane = new JScrollPane(content);
         scrollPane.setBorder(null);
         scrollPane.setOpaque(false);
         scrollPane.getViewport().setOpaque(false);
@@ -132,6 +207,58 @@ public class LauncherFrame extends JFrame {
         scrollBar.setForeground(ACCENT);
 
         add(scrollPane, BorderLayout.CENTER);
+
+        filterGames();
+    }
+
+    private void filterGames() {
+        if (searchField == null || library == null) {
+            return;
+        }
+
+        String query = searchField.getText()
+                .trim()
+                .toLowerCase();
+
+        library.removeAll();
+
+        int matchCount = 0;
+
+        for (GameInfo game : games) {
+            boolean matches = game.title.toLowerCase().contains(query)
+                    || game.description.toLowerCase().contains(query)
+                    || game.category.toLowerCase().contains(query);
+
+            if (matches) {
+                library.add(createGameCard(
+                        game.title,
+                        game.description,
+                        game.category
+                ));
+
+                matchCount++;
+            }
+        }
+
+        int columns = 2;
+        int rows = Math.max(1, (matchCount + columns - 1) / columns);
+
+        library.setLayout(new GridLayout(rows, columns, 18, 18));
+
+        boolean noResults = matchCount == 0;
+        emptyLabel.setVisible(noResults);
+
+        resultLabel.setText(
+                matchCount + (matchCount == 1 ? " game found" : " games found")
+        );
+
+        library.revalidate();
+        library.repaint();
+
+        if (library.getParent() != null) {
+            library.getParent().revalidate();
+            library.getParent().repaint();
+        }
     }
 
     private JPanel createGameCard(
@@ -156,16 +283,12 @@ public class LauncherFrame extends JFrame {
                         + "</div></html>"
         );
 
-        gameDescription.setFont(
-                new Font("SansSerif", Font.PLAIN, 14)
-        );
+        gameDescription.setFont(new Font("SansSerif", Font.PLAIN, 14));
         gameDescription.setForeground(MUTED);
         gameDescription.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel gameCategory = new JLabel(category);
-        gameCategory.setFont(
-                new Font("Monospaced", Font.BOLD, 11)
-        );
+        gameCategory.setFont(new Font("Monospaced", Font.BOLD, 11));
         gameCategory.setForeground(ACCENT);
         gameCategory.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -174,9 +297,7 @@ public class LauncherFrame extends JFrame {
         playButton.setForeground(Color.WHITE);
         playButton.setBackground(ACCENT);
         playButton.setFocusPainted(false);
-        playButton.setBorder(
-                new EmptyBorder(9, 17, 9, 17)
-        );
+        playButton.setBorder(new EmptyBorder(9, 17, 9, 17));
         playButton.setAlignmentX(Component.LEFT_ALIGNMENT);
         playButton.setCursor(
                 Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
@@ -225,12 +346,26 @@ public class LauncherFrame extends JFrame {
                 "JAVA ARCADE  |  BUILT WITH JAVA SWING"
         );
 
-        footer.setFont(
-                new Font("Monospaced", Font.PLAIN, 10)
-        );
+        footer.setFont(new Font("Monospaced", Font.PLAIN, 10));
         footer.setForeground(MUTED);
         footer.setBorder(new EmptyBorder(0, 35, 16, 35));
 
         add(footer, BorderLayout.SOUTH);
+    }
+
+    private static class GameInfo {
+        private final String title;
+        private final String description;
+        private final String category;
+
+        private GameInfo(
+                String title,
+                String description,
+                String category
+        ) {
+            this.title = title;
+            this.description = description;
+            this.category = category;
+        }
     }
 }
