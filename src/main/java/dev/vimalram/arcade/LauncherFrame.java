@@ -61,37 +61,42 @@ public class LauncherFrame extends JFrame {
     private void registerGames() {
         games.add(new GameInfo(
                 "Tic-Tac-Toe",
-                "A classic strategy game.",
+                "Take turns placing marks and get three in a row to win.",
                 "2 PLAYERS",
-                "Strategy"
+                "Strategy",
+                "EASY"
         ));
 
         games.add(new GameInfo(
                 "Snake",
-                "Eat, grow, and avoid collisions.",
+                "Collect food, grow longer, and avoid hitting yourself or the walls.",
                 "ARCADE",
-                "Arcade"
+                "Arcade",
+                "MEDIUM"
         ));
 
         games.add(new GameInfo(
                 "Rock Paper Scissors",
-                "Challenge the computer.",
+                "Choose rock, paper, or scissors and challenge the computer.",
                 "QUICK PLAY",
-                "Quick Play"
+                "Quick Play",
+                "EASY"
         ));
 
         games.add(new GameInfo(
                 "Number Guessing",
-                "Can you find the secret number?",
+                "Use the hints to discover the secret number.",
                 "PUZZLE",
-                "Puzzle"
+                "Puzzle",
+                "EASY"
         ));
 
         games.add(new GameInfo(
                 "Breakout",
-                "Smash bricks, control the paddle, and beat the high score.",
+                "Control your paddle, break the bricks, and beat your best score.",
                 "ARCADE",
-                "Arcade"
+                "Arcade",
+                "CHALLENGING"
         ));
     }
 
@@ -123,7 +128,7 @@ public class LauncherFrame extends JFrame {
         searchField.setBorder(new EmptyBorder(12, 15, 12, 15));
         searchField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         searchField.setToolTipText(
-                "Search games by name, description, or category"
+                "Search games by name, description, category, or difficulty"
         );
 
         JPanel searchPanel = new JPanel(new BorderLayout());
@@ -300,13 +305,15 @@ public class LauncherFrame extends JFrame {
                     game.title.toLowerCase().contains(query)
                             || game.description.toLowerCase().contains(query)
                             || game.category.toLowerCase().contains(query)
-                            || game.badge.toLowerCase().contains(query);
+                            || game.badge.toLowerCase().contains(query)
+                            || game.difficulty.toLowerCase().contains(query);
 
             if (matchesCategory && matchesSearch) {
                 library.add(createGameCard(
                         game.title,
                         game.description,
-                        game.badge
+                        game.badge,
+                        game.difficulty
                 ));
 
                 matchCount++;
@@ -335,12 +342,18 @@ public class LauncherFrame extends JFrame {
     private JPanel createGameCard(
             String title,
             String description,
-            String category
+            String category,
+            String difficulty
     ) {
         JPanel card = new JPanel();
 
         card.setBackground(PANEL);
-        card.setBorder(new EmptyBorder(20, 22, 20, 22));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(
+                        new Color(43, 48, 65), 1
+                ),
+                new EmptyBorder(19, 21, 19, 21)
+        ));
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
 
         JLabel gameTitle = new JLabel(title);
@@ -353,15 +366,24 @@ public class LauncherFrame extends JFrame {
                         + description
                         + "</div></html>"
         );
-
         gameDescription.setFont(new Font("SansSerif", Font.PLAIN, 14));
         gameDescription.setForeground(MUTED);
         gameDescription.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel gameCategory = new JLabel(category);
-        gameCategory.setFont(new Font("Monospaced", Font.BOLD, 11));
-        gameCategory.setForeground(ACCENT);
-        gameCategory.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JPanel infoPanel = new JPanel(
+                new FlowLayout(FlowLayout.LEFT, 8, 0)
+        );
+        infoPanel.setOpaque(false);
+        infoPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel gameCategory = createInfoBadge(category, ACCENT);
+        JLabel difficultyBadge = createInfoBadge(
+                difficulty,
+                getDifficultyColor(difficulty)
+        );
+
+        infoPanel.add(gameCategory);
+        infoPanel.add(difficultyBadge);
 
         JButton playButton = new JButton("PLAY  →");
         playButton.setFont(new Font("SansSerif", Font.BOLD, 12));
@@ -404,12 +426,40 @@ public class LauncherFrame extends JFrame {
         card.add(gameTitle);
         card.add(Box.createVerticalStrut(9));
         card.add(gameDescription);
-        card.add(Box.createVerticalStrut(7));
-        card.add(gameCategory);
-        card.add(Box.createVerticalStrut(12));
+        card.add(Box.createVerticalStrut(14));
+        card.add(infoPanel);
+        card.add(Box.createVerticalStrut(15));
         card.add(playButton);
 
         return card;
+    }
+
+    private JLabel createInfoBadge(String text, Color color) {
+        JLabel badge = new JLabel(text);
+        badge.setFont(new Font("Monospaced", Font.BOLD, 10));
+        badge.setForeground(color);
+        badge.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(
+                        new Color(
+                                color.getRed(),
+                                color.getGreen(),
+                                color.getBlue(),
+                                100
+                        )
+                ),
+                new EmptyBorder(5, 7, 5, 7)
+        ));
+
+        return badge;
+    }
+
+    private Color getDifficultyColor(String difficulty) {
+        return switch (difficulty) {
+            case "EASY" -> new Color(103, 230, 167);
+            case "MEDIUM" -> new Color(255, 202, 99);
+            case "CHALLENGING" -> new Color(255, 112, 130);
+            default -> MUTED;
+        };
     }
 
     private void createFooter() {
@@ -429,17 +479,20 @@ public class LauncherFrame extends JFrame {
         private final String description;
         private final String badge;
         private final String category;
+        private final String difficulty;
 
         private GameInfo(
                 String title,
                 String description,
                 String badge,
-                String category
+                String category,
+                String difficulty
         ) {
             this.title = title;
             this.description = description;
             this.badge = badge;
             this.category = category;
+            this.difficulty = difficulty;
         }
     }
 }
