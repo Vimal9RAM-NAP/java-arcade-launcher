@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#09090b">
+    <title>Java Arcade | Play in Browser</title>
+    <script src="https://cjrtnc.leaningtech.com/5.0/loader.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #09090b;
+            color: #f4f4f5;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid #27272a;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        header h1 span {
+            color: #a78bfa;
+        }
+
+        header p {
+            color: #a1a1aa;
+            margin-bottom: 0;
+        }
+
+        main {
+            width: min(1100px, 100%);
+            margin: 0 auto;
+            padding: 28px 16px;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .intro h2 {
+            margin-bottom: 8px;
+        }
+
+        .intro p {
+            color: #a1a1aa;
+            line-height: 1.6;
+        }
+
+        #status {
+            margin: 16px 0;
+            text-align: center;
+            color: #c4b5fd;
+            font-size: 0.95rem;
+        }
+
+        #arcade {
+            width: 100%;
+            min-height: 650px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            background: #111114;
+            border: 1px solid #3f3f46;
+            border-radius: 14px;
+        }
+
+        .launch-button {
+            display: block;
+            margin: 20px auto;
+            padding: 13px 24px;
+            border: 0;
+            border-radius: 9px;
+            background: #8b5cf6;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .launch-button:hover {
+            background: #7c3aed;
+        }
+
+        .launch-button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        footer {
+            padding: 24px;
+            text-align: center;
+            color: #71717a;
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: #c4b5fd;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Java <span>Arcade</span></h1>
+        <p>A collection of Java games, now in your browser.</p>
+    </header>
+
+    <main>
+        <section class="intro">
+            <h2>Welcome to the Arcade</h2>
+            <p>
+                Play the games from the Java Arcade desktop project
+                directly in your browser.
+            </p>
+        </section>
+
+        <div id="status">Ready to start.</div>
+
+        <button class="launch-button" id="launchButton" type="button">
+            Launch Java Arcade
+        </button>
+
+        <div id="arcade"></div>
+    </main>
+
+    <footer>
+        Built with Java Swing and
+        <a href="https://cheerpj.com/" target="_blank" rel="noopener noreferrer">CheerpJ</a>.
+    </footer>
+
+    <script type="module">
+        const launchButton = document.getElementById("launchButton");
+        const status = document.getElementById("status");
+        const arcade = document.getElementById("arcade");
+
+        let launched = false;
+
+        launchButton.addEventListener("click", async () => {
+            if (launched) return;
+
+            launched = true;
+            launchButton.disabled = true;
+            launchButton.textContent = "Starting...";
+            status.textContent = "Loading the Java runtime. This may take a little while.";
+
+            try {
+                await cheerpjInit({ version: 21 });
+
+                cheerpjCreateDisplay(1000, 700, arcade);
+
+                status.textContent = "Starting Java Arcade...";
+
+                await cheerpjRunMain(
+                    "dev.vimalram.arcade.Game",
+                    "/app/java-arcade-launcher.jar"
+                );
+
+                status.textContent = "Java Arcade has closed.";
+            } catch (error) {
+                console.error(error);
+                status.textContent =
+                    "Unable to launch the arcade. Check the browser console for details.";
+                launched = false;
+            } finally {
+                launchButton.disabled = false;
+                launchButton.textContent = launched
+                    ? "Arcade Started"
+                    : "Try Again";
+            }
+        });
+    </script>
+</body>
+</html>
